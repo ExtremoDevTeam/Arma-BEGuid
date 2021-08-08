@@ -14,12 +14,10 @@ namespace BEGuid
         DayZ = 2354
     }
 
-
     public class DllEntry
     {
         public static bool fullInit = false;
         public static string[] stringSeparators = { ":" };
-        public static string sqlLogin = "";
 
         //Entry Point
         [ArmaDllExport]

@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29409.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BEGuid", "BEGuid\BEGuid.csproj", "{AB194995-0D5A-465F-AA8D-BAA14774F3D8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Normal|x64 = Normal|x64
+		Normal|x86 = Normal|x86
+		Obfuscate|x64 = Obfuscate|x64
+		Obfuscate|x86 = Obfuscate|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AB194995-0D5A-465F-AA8D-BAA14774F3D8}.Normal|x64.ActiveCfg = Normal|x64
+		{AB194995-0D5A-465F-AA8D-BAA14774F3D8}.Normal|x64.Build.0 = Normal|x64
+		{AB194995-0D5A-465F-AA8D-BAA14774F3D8}.Normal|x86.ActiveCfg = Normal|x86
+		{AB194995-0D5A-465F-AA8D-BAA14774F3D8}.Normal|x86.Build.0 = Normal|x86
+		{AB194995-0D5A-465F-AA8D-BAA14774F3D8}.Obfuscate|x64.ActiveCfg = Obfuscate|x64
+		{AB194995-0D5A-465F-AA8D-BAA14774F3D8}.Obfuscate|x64.Build.0 = Obfuscate|x64
+		{AB194995-0D5A-465F-AA8D-BAA14774F3D8}.Obfuscate|x86.ActiveCfg = Obfuscate|x86
+		{AB194995-0D5A-465F-AA8D-BAA14774F3D8}.Obfuscate|x86.Build.0 = Obfuscate|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E18769C7-1A21-4506-859D-DE29F884B6F0}
+	EndGlobalSection
+EndGlobal

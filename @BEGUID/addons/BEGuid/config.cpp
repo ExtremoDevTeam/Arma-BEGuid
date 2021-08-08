@@ -17,6 +17,8 @@ class CfgFunctions
 			file="\BEGuid"; 
 			class check {};
             class get {};
+			class onConnected {};
+			class init {preInit = 1};
 		};
 	};
 };

@@ -31,7 +31,7 @@ namespace BEGuid
                 {
                     //'BEGuid' callExtension "get:76561198276956558"
                     case "get":
-                        result = GetMD5Hash(inputSplit[1]);
+                        result = CreateRequestString(inputSplit[1]);
                         break;
                     //'BEGuid' callExtension "check:76561198276956558"
                     case "check":
@@ -97,7 +97,7 @@ namespace BEGuid
             //TODO: Add steamkit dll and verify
             if (steamID.ToString().Length != 17) return false;
             return true;
-        } 
+        }
         
         private static Random rnd = new Random();
         private static string CreateRequestString(string SteamIDIn)
@@ -109,10 +109,12 @@ namespace BEGuid
                 bArray[4] = 1;
                 long steamID;
                 bool status = long.TryParse(SteamIDIn, out steamID);
-                if (status && IsValidSteamID(steamID)) return Encoding.ASCII.GetString(bArray) + CreateBEGuid(steamID);
 
-                //Old way to check if key is banned
-                return ".gr." + GetMD5Hash("BE" + GetMD5Hash(SteamIDIn));
+                //main method
+                if (status && IsValidSteamID(steamID)) return CreateBEGuid(steamID);
+
+                //fail safe method
+                return GetMD5Hash("BE" + GetMD5Hash(SteamIDIn));
             }
 
             return "";

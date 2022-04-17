@@ -2,51 +2,105 @@
 using System.Security.Cryptography;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
-using Maca134.Arma.DllExport; 
+using System.Text; 
+using System.Security.Permissions;
+using Maca134.Arma.DllExport;
+using System.Collections.Generic;
+using System.IO;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Web.Script.Serialization;
+using Microsoft.Win32;
+
 
 namespace BEGuid
 {
-    internal enum BEPort
-    {
-        Arma2OA = 2324,
-        Arma3 = 2344,
-        DayZ = 2354
-    }
-
     public class DllEntry
     {
-        public static bool fullInit = false;
         public static string[] stringSeparators = { ":" };
 
         //Entry Point
         [ArmaDllExport]
-        public static string Invoke(string input, int maxSize) 
-        { 
+        public static string Invoke(string inputStr, int maxSize) => run(inputStr);
+
+        //Main Function Handle
+        [PermissionSet(SecurityAction.LinkDemand, Name = "FullTrust")]
+        public static string run(string input)
+        {
             string result = "";
             try
             {
-                string[] inputSplit = input.Split(stringSeparators, StringSplitOptions.None);   
-                switch (inputSplit[0])
-                {
-                    //'BEGuid' callExtension "get:76561198276956558"
-                    case "get":
-                        result = CreateRequestString(inputSplit[1]);
-                        break;
-                    //'BEGuid' callExtension "check:76561198276956558"
-                    case "check":
-                        result = /*CheckSteamID(BEPort.Arma3, inputSplit[1]);*/ "service down";
-                        break;
-                    default:
-                        break; 
+                string[] inputSplit = input.Split(stringSeparators, StringSplitOptions.None);
+                if(inputSplit.Length > 1) {
+                    switch (inputSplit[0])
+                    {
+                        //'BEGuid' callExtension "get:76561198276956558"
+                        case "get":
+                            result = A3Functions.GetBEGuid(inputSplit[1]);
+                            break;
+                        //'BEGuid' callExtension "check:76561198276956558"
+                        case "check":
+                            result = A3Functions.CheckBEbanned(inputSplit[1]);
+                            break;
+                        default:
+                            break;
+                    }
                 }
+                else
+                {
+                    switch (input)
+                    { 
+                        //'BEGuid' callExtension "test"
+                        case "test":
+                            result = "1";
+                            break;
+                        //'BEGuid' callExtension "hwid"
+                        case "hwid":
+                            result = A3Functions.GetHWID();
+                            break;
+                        default:
+                            break;
+                    }
+                }
+               
             }catch (Exception e){ 
                 Environment.Exit(-1);
             }
             return result; 
-        }
+        } 
+    }
 
-        internal static string CheckSteamID(BEPort _BEPort, string SteamID)
+    public static class A3Functions
+    { 
+
+        //Get HardwareID
+        public static string GetHWID()
+        {
+            using (RegistryKey registryKey1 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64))
+            {
+                using (RegistryKey registryKey2 = registryKey1.OpenSubKey("SOFTWARE\\Microsoft\\Cryptography"))
+                {
+                    //No key Exception
+                    if (registryKey2 == null) throw new KeyNotFoundException(string.Format("Key Not Found: {0}", (object)"SOFTWARE\\Microsoft\\Cryptography"));
+
+                    //Get the GUID Key
+                    object Key = registryKey2.GetValue("MachineGuid");
+
+                    //No Index Exception
+                    if (Key == null) throw new IndexOutOfRangeException(string.Format("Index Not Found: {0}", (object)"MachineGuid"));
+
+                    //Return The Key As A String
+                    return Key.ToString().ToUpper();
+                }
+            }
+        }
+        public static string GetBEGuid(string SteamID) => CreateRequestString(SteamID);
+        public static string CheckBEbanned(string SteamID) => CheckSteamID(SteamID);
+
+        private static string CheckSteamID(string SteamID)
         {
             Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             sock.ReceiveTimeout = 1000;
@@ -55,22 +109,8 @@ namespace BEGuid
             //Arma 2: arma2oa1.battleye.com Port:2324
             //Arma 3: arma31.battleye.com Port:2344
             //DayZ SA: dayz1.battleye.com Port:2354
-            string domain = null;
-            switch (_BEPort)
-            {
-                case BEPort.Arma2OA:
-                    domain = "arma2oa1.battleye.com";
-                    break;
-                case BEPort.Arma3:
-                    domain = "arma31.battleye.com";
-                    break;
-                case BEPort.DayZ:
-                    domain = "dayz1.battleye.com";
-                    break;
-                default:
-                    return "Unknown config";
-            }
-            IPEndPoint endPoint = new IPEndPoint(Dns.GetHostAddresses(domain)[0], (int)_BEPort);
+            string domain = "arma31.battleye.com";
+            IPEndPoint endPoint = new IPEndPoint(Dns.GetHostAddresses(domain)[0], 2344);
             byte[] send_buffer = Encoding.ASCII.GetBytes(CreateRequestString(SteamID));
             try
             {
@@ -85,20 +125,20 @@ namespace BEGuid
             return "Unknown Error";
         }
 
-        public static bool IsValidSteamID(string SteamIDIn)
+        private static bool IsValidSteamID(string SteamIDIn)
         {
             long steamID;
             bool status = long.TryParse(SteamIDIn, out steamID);
             if (status && IsValidSteamID(steamID)) return true;
             return false;
         }
-        public static bool IsValidSteamID(long steamID)
+        private static bool IsValidSteamID(long steamID)
         {
             //TODO: Add steamkit dll and verify
             if (steamID.ToString().Length != 17) return false;
             return true;
         }
-        
+
         private static Random rnd = new Random();
         private static string CreateRequestString(string SteamIDIn)
         {
@@ -125,7 +165,7 @@ namespace BEGuid
         /// </summary>
         /// <param name="SteamId"></param>
         /// <returns></returns>
-        public static string CreateBEGuid(long SteamId)
+        private static string CreateBEGuid(long SteamId)
         {
             byte[] parts = { 0x42, 0x45, 0, 0, 0, 0, 0, 0, 0, 0 };
             byte counter = 2;
@@ -161,5 +201,6 @@ namespace BEGuid
             }
             return sBuilder.ToString();
         }
+
     }
 }
